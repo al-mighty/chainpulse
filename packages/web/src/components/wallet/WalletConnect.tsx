@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTonConnectUI, useTonAddress } from '@tonconnect/ui-react';
 
 interface Props {
   onConnect: (address: string) => void;
@@ -6,6 +7,12 @@ interface Props {
 
 export function WalletConnect({ onConnect }: Props) {
   const [input, setInput] = useState('');
+  const [tonConnectUI] = useTonConnectUI();
+  const tonAddress = useTonAddress();
+
+  useEffect(() => {
+    if (tonAddress) onConnect(tonAddress);
+  }, [tonAddress]);
 
   const handlePhantom = async () => {
     try {
@@ -33,8 +40,8 @@ export function WalletConnect({ onConnect }: Props) {
         <button onClick={handlePhantom} style={btnStyle('#9945FF')}>
           Phantom (SOL)
         </button>
-        <button disabled style={{ ...btnStyle('#0098EA'), opacity: 0.5 }}>
-          TON Connect (soon)
+        <button onClick={() => tonConnectUI.openModal()} style={btnStyle('#0098EA')}>
+          TON Connect
         </button>
       </div>
 

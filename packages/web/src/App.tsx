@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WalletConnect } from './components/wallet/WalletConnect';
 import { PortfolioSummary } from './components/portfolio/PortfolioSummary';
 import { TxHistory } from './components/transactions/TxHistory';
+import { NFTGallery } from './components/portfolio/NFTGallery';
 import { usePortfolio } from './hooks/usePortfolio';
 
 export function App() {
@@ -44,6 +45,7 @@ export function App() {
           )}
 
           <PortfolioSummary portfolio={portfolio} loading={loading} />
+          <NFTGallery address={address} />
           <TxHistory address={address} />
 
           <footer style={{ marginTop: 48, padding: '24px 0', borderTop: '1px solid var(--line)', textAlign: 'center' }}>

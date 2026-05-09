@@ -98,9 +98,29 @@ export class SolanaProvider implements IChainProvider {
     });
   }
 
-  async getNFTs(_address: string): Promise<NFTAsset[]> {
-    // Simplified — would use Metaplex in production
-    return [];
+  async getNFTs(address: string): Promise<NFTAsset[]> {
+    try {
+      const pubkey = new PublicKey(address);
+      const tokenAccounts = await this.connection.getParsedTokenAccountsByOwner(pubkey, {
+        programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+      });
+
+      return tokenAccounts.value
+        .filter(({ account }) => {
+          const info = account.data.parsed?.info;
+          return info?.tokenAmount?.uiAmount === 1 && info?.tokenAmount?.decimals === 0;
+        })
+        .map(({ account }) => {
+          const mint = account.data.parsed?.info?.mint || '';
+          return {
+            mint,
+            name: `NFT ${mint.slice(0, 8)}`,
+            chainId: ChainId.SOLANA,
+          };
+        });
+    } catch {
+      return [];
+    }
   }
 
   subscribeToBalanceChanges(address: string): Observable<Balance[]> {

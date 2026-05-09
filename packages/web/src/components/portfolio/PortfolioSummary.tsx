@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChainPieChart } from './ChainPieChart';
 
 interface Props {
   portfolio: any;
@@ -13,11 +14,14 @@ export function PortfolioSummary({ portfolio, loading }: Props) {
 
   return (
     <div>
-      <div style={card}>
-        <div style={{ fontSize: 12, color: 'var(--ink-dim)', letterSpacing: 2, marginBottom: 8 }}>TOTAL VALUE</div>
-        <div style={{ fontSize: 42, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--mono)' }}>
-          ${portfolio.totalUsdValue?.toFixed(2) || '0.00'}
+      <div style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24 }}>
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--ink-dim)', letterSpacing: 2, marginBottom: 8 }}>TOTAL VALUE</div>
+          <div style={{ fontSize: 42, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--mono)' }}>
+            ${portfolio.totalUsdValue?.toFixed(2) || '0.00'}
+          </div>
         </div>
+        {chains.length > 0 && <ChainPieChart chains={chains} />}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginTop: 16 }}>
