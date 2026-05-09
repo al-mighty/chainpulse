@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { WalletConnect } from './components/wallet/WalletConnect';
 import { PortfolioSummary } from './components/portfolio/PortfolioSummary';
 import { TxHistory } from './components/transactions/TxHistory';
-import { TxFlowGraph } from './components/transactions/TxFlowGraph';
 import { NFTGallery } from './components/portfolio/NFTGallery';
+
+const TxFlowGraph = lazy(() => import('./components/transactions/TxFlowGraph').then(m => ({ default: m.TxFlowGraph })));
 import { usePortfolio } from './hooks/usePortfolio';
 import { api } from './lib/api';
 
@@ -121,7 +122,9 @@ export function App() {
               ⚡ Demo mode — showing sample transactions (public RPC rate limited)
             </div>
           )}
-          <TxFlowGraph txs={txs} address={address} />
+          <Suspense fallback={<div style={{ height: 500, background: 'var(--bg-2)', borderRadius: 'var(--radius)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-dim)', marginTop: 24 }}>Loading graph...</div>}>
+            <TxFlowGraph txs={txs} address={address} />
+          </Suspense>
           <NFTGallery address={address} />
           <TxHistory address={address} />
 
