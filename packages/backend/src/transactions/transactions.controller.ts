@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
-import type { Container } from 'inversify';
-import { TYPES, ChainId } from '@chainpulse/sdk';
-import type { IChainProvider } from '@chainpulse/sdk';
+import { Container } from 'inversify';
+import { TYPES } from '@chainpulse/sdk';
+import type { IChainProvider, Transaction } from '@chainpulse/sdk';
 
 @Controller('tx')
 export class TransactionsController {
@@ -26,9 +26,9 @@ export class TransactionsController {
     );
 
     const txs = results
-      .filter((r): r is PromiseFulfilledResult<any[]> => r.status === 'fulfilled')
-      .flatMap(r => r.value)
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .filter((r): r is PromiseFulfilledResult<Transaction[]> => r.status === 'fulfilled')
+      .flatMap((r) => r.value)
+      .sort((a: Transaction, b: Transaction) => b.timestamp - a.timestamp);
 
     return txs;
   }

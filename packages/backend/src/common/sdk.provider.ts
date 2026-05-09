@@ -7,7 +7,7 @@ import {
   PriceService,
   StreamService,
 } from '@chainpulse/sdk';
-import type { Container } from 'inversify';
+import { Container } from 'inversify';
 
 export const SDK_CONTAINER = 'SDK_CONTAINER';
 
