@@ -2,14 +2,23 @@ import React, { useState, useCallback } from 'react';
 import { WalletConnect } from './components/wallet/WalletConnect';
 import { PortfolioSummary } from './components/portfolio/PortfolioSummary';
 import { TxHistory } from './components/transactions/TxHistory';
+import { TxFlowGraph } from './components/transactions/TxFlowGraph';
 import { NFTGallery } from './components/portfolio/NFTGallery';
 import { usePortfolio } from './hooks/usePortfolio';
+import { api } from './lib/api';
 
 export function App() {
   const [address, setAddress] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [txs, setTxs] = useState<any[]>([]);
   const { portfolio, loading, error } = usePortfolio(address, refreshKey);
   const handleRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Load txs for flow graph
+  React.useEffect(() => {
+    if (!address) { setTxs([]); return; }
+    api.getTransactions(address).then(setTxs).catch(() => setTxs([]));
+  }, [address, refreshKey]);
 
   return (
     <div style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: 900, margin: '0 auto' }}>
@@ -60,6 +69,7 @@ export function App() {
           )}
 
           <PortfolioSummary portfolio={portfolio} loading={loading} />
+          <TxFlowGraph txs={txs} address={address} />
           <NFTGallery address={address} />
           <TxHistory address={address} />
 
