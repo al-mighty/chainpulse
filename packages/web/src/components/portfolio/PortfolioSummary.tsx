@@ -6,8 +6,23 @@ interface Props {
   loading: boolean;
 }
 
+function Skeleton({ width = '100%', height = 20 }: { width?: string | number; height?: number }) {
+  return <div style={{ ...shimmer, width, height, borderRadius: 6 }} />;
+}
+
 export function PortfolioSummary({ portfolio, loading }: Props) {
-  if (loading) return <div style={card}>Loading...</div>;
+  if (loading) return (
+    <div>
+      <div style={card}>
+        <Skeleton width={120} height={14} />
+        <div style={{ marginTop: 12 }}><Skeleton width={200} height={42} /></div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginTop: 16 }}>
+        <div style={card}><Skeleton height={80} /></div>
+        <div style={card}><Skeleton height={80} /></div>
+      </div>
+    </div>
+  );
   if (!portfolio) return null;
 
   const chains = Object.values(portfolio.chains || {}) as any[];
@@ -56,4 +71,10 @@ export function PortfolioSummary({ portfolio, loading }: Props) {
 const card: React.CSSProperties = {
   background: 'var(--bg-2)', borderRadius: 'var(--radius)', padding: 24,
   border: '1px solid var(--line)',
+};
+
+const shimmer: React.CSSProperties = {
+  background: 'linear-gradient(90deg, var(--bg-2) 25%, rgba(255,255,255,0.04) 50%, var(--bg-2) 75%)',
+  backgroundSize: '200% 100%',
+  animation: 'shimmer 1.5s infinite',
 };

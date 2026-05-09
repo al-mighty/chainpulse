@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { WalletConnect } from './components/wallet/WalletConnect';
 import { PortfolioSummary } from './components/portfolio/PortfolioSummary';
 import { TxHistory } from './components/transactions/TxHistory';
@@ -7,7 +7,9 @@ import { usePortfolio } from './hooks/usePortfolio';
 
 export function App() {
   const [address, setAddress] = useState<string | null>(null);
-  const { portfolio, loading, error } = usePortfolio(address);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { portfolio, loading, error } = usePortfolio(address, refreshKey);
+  const handleRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
   return (
     <div style={{ minHeight: '100vh', padding: '60px 24px', maxWidth: 900, margin: '0 auto' }}>
@@ -26,16 +28,29 @@ export function App() {
                 {address.slice(0, 8)}...{address.slice(-6)}
               </div>
             </div>
-            <button
-              onClick={() => setAddress(null)}
-              style={{
-                background: 'transparent', border: '1px solid var(--line-2)',
-                color: 'var(--ink-dim)', padding: '8px 16px', borderRadius: 'var(--radius)',
-                cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11,
-              }}
-            >
-              Disconnect
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                style={{
+                  background: 'transparent', border: '1px solid var(--line-2)',
+                  color: loading ? 'var(--line-2)' : 'var(--accent)', padding: '8px 16px', borderRadius: 'var(--radius)',
+                  cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11,
+                }}
+              >
+                {loading ? '...' : '↻ Refresh'}
+              </button>
+              <button
+                onClick={() => setAddress(null)}
+                style={{
+                  background: 'transparent', border: '1px solid var(--line-2)',
+                  color: 'var(--ink-dim)', padding: '8px 16px', borderRadius: 'var(--radius)',
+                  cursor: 'pointer', fontFamily: 'var(--mono)', fontSize: 11,
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
           </header>
 
           {error && (

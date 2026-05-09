@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 
-export function usePortfolio(address: string | null) {
+export function usePortfolio(address: string | null, refreshKey = 0) {
   const [portfolio, setPortfolio] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function usePortfolio(address: string | null) {
       .then(setPortfolio)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [address]);
+  }, [address, refreshKey]);
 
   return { portfolio, loading, error };
 }
