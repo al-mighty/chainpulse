@@ -5,6 +5,17 @@ import { Observable, timer, switchMap, shareReplay, retry } from 'rxjs';
 import { TYPES, ChainId, CHAIN_META } from '../../constants';
 import type { IChainProvider, ChainPulseConfig, Balance, Transaction, NFTAsset } from '../../types';
 
+const KNOWN_TOKENS: Record<string, { symbol: string; name: string; coingeckoId?: string }> = {
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': { symbol: 'USDC', name: 'USD Coin', coingeckoId: 'usd-coin' },
+  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': { symbol: 'USDT', name: 'Tether', coingeckoId: 'tether' },
+  'So11111111111111111111111111111111111111112': { symbol: 'wSOL', name: 'Wrapped SOL', coingeckoId: 'solana' },
+  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': { symbol: 'JUP', name: 'Jupiter', coingeckoId: 'jupiter-exchange-solana' },
+  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263': { symbol: 'BONK', name: 'Bonk', coingeckoId: 'bonk' },
+  'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So': { symbol: 'mSOL', name: 'Marinade SOL', coingeckoId: 'msol' },
+  '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs': { symbol: 'ETH', name: 'Ethereum (Wormhole)', coingeckoId: 'ethereum' },
+  'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof': { symbol: 'RNDR', name: 'Render', coingeckoId: 'render-token' },
+};
+
 @injectable()
 export class SolanaProvider implements IChainProvider {
   readonly chainId = ChainId.SOLANA;
@@ -54,10 +65,11 @@ export class SolanaProvider implements IChainProvider {
       for (const { account } of tokenAccounts.value) {
         const info = account.data.parsed?.info;
         if (!info || info.tokenAmount.uiAmount === 0) continue;
+        const known = KNOWN_TOKENS[info.mint];
         balances.push({
           token: {
-            symbol: info.mint.slice(0, 6),
-            name: info.mint,
+            symbol: known?.symbol || info.mint.slice(0, 6),
+            name: known?.name || info.mint,
             mint: info.mint,
             decimals: info.tokenAmount.decimals,
           },
