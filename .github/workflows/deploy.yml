@@ -1,0 +1,71 @@
+name: Deploy ChainPulse
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload sources
+        run: |
+          rsync -avz --exclude='node_modules' --exclude='.git' --exclude='.turbo' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            . root@${{ secrets.VPS_HOST }}:/opt/cheslav/chainpulse/
+
+      - name: Build and restart
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} << 'EOF'
+          cd /opt/cheslav/chainpulse
+          docker build --no-cache -t chainpulse .
+          docker rm -f cheslav-chainpulse 2>/dev/null
+          docker run -d \
+            --name cheslav-chainpulse \
+            --network cheslav-net \
+            --restart unless-stopped \
+            chainpulse
+          sleep 3
+          docker logs cheslav-chainpulse 2>&1 | tail -5
+          EOF
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build web
+        run: pnpm --filter @chainpulse/web build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy web
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_HOST }} "mkdir -p /opt/cheslav/chainpulse-web"
+          rsync -avz --delete -e "ssh -i ~/.ssh/deploy_key" \
+            packages/web/dist/ root@${{ secrets.VPS_HOST }}:/opt/cheslav/chainpulse-web/
