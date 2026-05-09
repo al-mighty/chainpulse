@@ -7,6 +7,31 @@ import { NFTGallery } from './components/portfolio/NFTGallery';
 import { usePortfolio } from './hooks/usePortfolio';
 import { api } from './lib/api';
 
+function generateDemoTxs(address: string) {
+  const now = Date.now();
+  const addrs = [
+    '3Kz9X4...demo1', '7Ppgch...demo2', 'DRpbC...demo3',
+    'EQDtFp...demo4', 'HN7cA...demo5',
+  ];
+  const types = ['transfer', 'swap', 'transfer', 'stake', 'transfer'];
+  const chains = ['solana', 'solana', 'ton', 'solana', 'ton'];
+  const symbols = ['SOL', 'USDC', 'TON', 'SOL', 'TON'];
+  const amounts = ['2.5', '150', '10', '5.0', '3.2'];
+
+  return Array.from({ length: 8 }, (_, i) => ({
+    hash: `demo${Math.random().toString(36).slice(2, 18)}${i}`,
+    chainId: chains[i % chains.length],
+    type: types[i % types.length],
+    from: i % 2 === 0 ? address : addrs[i % addrs.length],
+    to: i % 2 === 0 ? addrs[i % addrs.length] : address,
+    amount: amounts[i % amounts.length],
+    symbol: symbols[i % symbols.length],
+    timestamp: now - i * 3600000 * (2 + Math.random() * 10),
+    fee: (Math.random() * 0.01).toFixed(6),
+    status: i === 3 ? 'failed' : 'success',
+  }));
+}
+
 export function App() {
   const [address, setAddress] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -14,10 +39,15 @@ export function App() {
   const { portfolio, loading, error } = usePortfolio(address, refreshKey);
   const handleRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
+  const [demoMode, setDemoMode] = useState(false);
+
   // Load txs for flow graph
   React.useEffect(() => {
     if (!address) { setTxs([]); return; }
-    api.getTransactions(address).then(setTxs).catch(() => setTxs([]));
+    api.getTransactions(address).then(data => {
+      if (data.length > 0) { setTxs(data); setDemoMode(false); }
+      else { setTxs(generateDemoTxs(address)); setDemoMode(true); }
+    }).catch(() => { setTxs(generateDemoTxs(address)); setDemoMode(true); });
   }, [address, refreshKey]);
 
   return (
@@ -69,6 +99,15 @@ export function App() {
           )}
 
           <PortfolioSummary portfolio={portfolio} loading={loading} />
+          {demoMode && (
+            <div style={{
+              background: 'rgba(212,255,58,0.08)', border: '1px solid rgba(212,255,58,0.2)',
+              borderRadius: 'var(--radius)', padding: '10px 16px', marginBottom: 16,
+              fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--accent)',
+            }}>
+              ⚡ Demo mode — showing sample transactions (public RPC rate limited)
+            </div>
+          )}
           <TxFlowGraph txs={txs} address={address} />
           <NFTGallery address={address} />
           <TxHistory address={address} />
