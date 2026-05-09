@@ -32,10 +32,23 @@ function generateDemoTxs(address: string) {
   }));
 }
 
+function getAddressFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('address') || null;
+}
+
 export function App() {
-  const [address, setAddress] = useState<string | null>(null);
+  const [address, setAddressRaw] = useState<string | null>(getAddressFromUrl);
   const [refreshKey, setRefreshKey] = useState(0);
   const [txs, setTxs] = useState<any[]>([]);
+
+  const setAddress = useCallback((addr: string | null) => {
+    setAddressRaw(addr);
+    const url = new URL(window.location.href);
+    if (addr) url.searchParams.set('address', addr);
+    else url.searchParams.delete('address');
+    history.replaceState(null, '', url.toString());
+  }, []);
   const { portfolio, loading, error } = usePortfolio(address, refreshKey);
   const handleRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
