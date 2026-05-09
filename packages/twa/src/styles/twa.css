@@ -1,0 +1,15 @@
+:root {
+  --bg: var(--tg-theme-bg-color, #0a0e1a);
+  --text: var(--tg-theme-text-color, #f4f1ea);
+  --hint: var(--tg-theme-hint-color, #8b94a8);
+  --button: var(--tg-theme-button-color, #d4ff3a);
+  --button-text: var(--tg-theme-button-text-color, #0a0e1a);
+  --section-bg: var(--tg-theme-secondary-bg-color, #131829);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
